@@ -1,38 +1,94 @@
-##### UIMachine - A ruby state machine built for working with UI's that have animations
-##### Purpose built for Fittr
+#UIMachine
 
-### UIMachine events (These are all JSON)
+**UIMachine** is a javascript/ruby state-machine decoupled view manager that supports many traditional forms of navigation and works especially well with animations.  UIMachine was purpose built for **Fittr®**  because we mave multiple platforms to support and a view hierarchy during our workouts that is unrepresentable by apple's storyboard system.  That's not to say that UIMachine is a replacement for typical view management systems, (The majority of our iOS client uses Storyboards), but serves a different purpose.  If you're doing a presentation-like application with lots of animations and the occasional user interaction, this might be the right fit for you.
 
- 1. Transition
- `{:type => "Transition", :from => "state_a", :to => "state_b", :info => {:group_ui_names => ["Warmup", "Chest"]}}`
-   info is optional
 
-### Substates
-Substates are embedded states.  For example, a music play may have 3 states, playing, paused, or buffering. These sub-states must be able to return
-Enough information to fully reconstruct last states, e.g. blur overlay needs last state
 
-### States
-All states have some embedded information that is given on transition entering. This information is actually the entire state's information pool. All future substates, events, etc.
-must only alter information in this pool.  Additionally, snapshots of this state's information is made during substate transitions and major transiitons. This snapshot provides
-all the necessary information for reconstruction of this state at the time of the transition
+We built **UIMachine** with ruby and uses the [OpalRB](http://opalrb.org) implementation; For those unfamiliar, OpalRB is a ruby implementation ontop of javascript.  UIMachine is written in ruby but exports to a generic single **application.js** file that you interface with.  It has been tested with **WebKit DOM-LESS** runtime.
 
-#### Implementation guarantees
-All implementations must be able to guarantee that they are able to support all valid transitions.  The implementation will be given both a snapshot of the last state immediately before the transition took place, and the previous transition, (n-2), and some location of the current state. Upon restoring, there are no guarentees on the values of the current state, however, the last state's snapshot will still be available.  This is to support blur overviews, and in general, dialog based views.\
+For those worried about performance or the use of an implementation like OpalRB; rest assured, OpalRB maintains specs that are very rigid and well tested.  These specs very closely follow the MRI standards; we have had very few issues with the implementation.  Performance and size are more of an issue here; we are able to run UIMachine on the iPhone with a typical controller dispatch time of around 2ms which is acceptable; our controllers and actions generally emit events and segues in the range of 10-20 seconds minimum so we are well within our specs; The size of OpalRB is of some concern, our package typically exports at around 480kilo-bytes which is more than we would like but given the niceties of ruby, we are inclined you will agree this is worth it.
 
-In the event you have something like a blurred modal view that has the possibility of unwinding to a different view than the last view, you may want to implement this by having two code paths.  One code path will be in the case that a restored state carries the same hash information, and therefore, can be considiered a simple de-blurring event. In the other event, the backing blur view will need to be trashed.
+## Sessions (Persistant and variable storage)
+You should never define global or local variables when defining actions and controllers.  You should always use either 
 
-#### Non-snapshotable
-A -> M1 -> M2 -> M1 -> M2 -> M1              [A -> M1]    A -> M1 -> M2
-Recovering to a previous state will be seen as a pop animation...
+  - `$_["my_var"]` - **Controller lifetime**
+  - `$__["my_var"]` - **Global lifetime**
 
-A
-A -> M1
-A -> M1 -> M2
-A -> M1
+The controller lifetime is destroyed in the case of ``move_segue`` and ``pop_segue`` for the from controller.  During a ``push_segue`` the from controller's `$_` session is saved and restored during a ``pop_segue``
 
-Transitions that revert back to previous states are assumed to be "Back" states.  The history timeline will not be constructed like 
 
-A -> M1 -> M2 -> M1 but rather A -> M1
+## Defining a controller and associated actions
 
-A -> B -> C -> B => N-2 -> A -> B
-A -> B -> C => A -> B -> C
+Controllers represent one screen in your application.  Typically, this screen may have a few buttons on it, and may have some internal states that it animates between.  Here we are creating a new controller called paperclip.
+
+```ruby
+controller "paperclip" do
+	on_entry do
+		#Declare variables
+		$_["n_times_said_something"] = 0     #A variable that will be destroyed when this controller is changed with a move_segue operation
+		$__["n_times_shown_paperclip"] += 1  #A variable that is global to the app
+		
+		#Return information for outgoing segue's toInfo
+		{:annoy => true}
+  end
+end
+```
+
+Actions are bound to a specific controller
+
+```ruby
+#Notice the connecting # operator.  This means :controller => "paperclip", :action => "default"
+action "paperclip#default" do
+	on_entry do
+		#Declare variables
+		# $_["my_variable"] = "test"  #It is not recommended to declar variables here, they have the same scope and lifetime as the controller on_entry and 
+		# are not destroyed when this action exits, nor should they be.
+		
+		#Return additional information to merge with the controller's on_entry
+		{:last_opened_document => get_last_opened_document}
+	end
+	
+	#Do something every 1 second, similar to setInterval in javascript
+	interval 1 do
+		#Send an event to the client with the type "speech"
+		send_event "speech", {:say => "It looks like you're trying to save a document"}
+	end
+	
+	#Do something once after 5 seconds
+	timeout 5 do
+		#Go to the action "annoying_animations" below, this will not call the on_entry of the annoying_animations.
+		to_action "annoying_animations"
+	end
+	
+	#React to a client custom event with a type "exit"
+	on :exit do
+		#Push a modal on top of this controller, this controller will maintain it's session information in $_ although it will be un-accessible to the pushed controller
+		push_segue "confirm_dialog"
+	end
+	
+	on :change_character do
+		#Move to a different controller, this will destroy $_ and the client should actually remove the controller
+		move_segue "hitler"
+	end
+end
+
+#Define another action
+action "paperclip#annoying_animations" do
+	on_entry do
+		{:animation => get_next_annoying_animation_name}
+	end
+	
+	on :animation_completed do
+		to_action "default"
+	end
+end
+```
+
+## Routes
+
+```ruby
+#One-to-One route with the associated name and the destination controller and actions
+get "overview" => "overview#current_status"
+get "completed_breakdown" => "completed_breakdown#start"
+get "paused" => "paused#default"
+```
