@@ -92,3 +92,13 @@ get "overview" => "overview#current_status"
 get "completed_breakdown" => "completed_breakdown#start"
 get "paused" => "paused#default"
 ```
+
+## Segue
+
+There are 3 kinds of segues
+
+ - ``move_segue``
+ - ``push_segue``
+ - ``pop_segue``
+
+The client is expected to transmit back a ``completed_segue`` after completing the given segue.  Failure to do so will result in an exception.
