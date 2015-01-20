@@ -2,8 +2,6 @@
 
 **UIMachine** is a javascript/ruby state-machine decoupled view manager that supports many traditional forms of navigation and works especially well with animations.  UIMachine was purpose built for **Fittr®**  because we mave multiple platforms to support and a view hierarchy during our workouts that is unrepresentable by apple's storyboard system.  That's not to say that UIMachine is a replacement for typical view management systems, (The majority of our iOS client uses Storyboards), but serves a different purpose.  If you're doing a presentation-like application with lots of animations and the occasional user interaction, this might be the right fit for you.
 
-
-
 We built **UIMachine** with ruby and uses the [OpalRB](http://opalrb.org) implementation; For those unfamiliar, OpalRB is a ruby implementation ontop of javascript.  UIMachine is written in ruby but exports to a generic single **application.js** file that you interface with.  It has been tested with **WebKit DOM-LESS** runtime.
 
 For those worried about performance or the use of an implementation like OpalRB; rest assured, OpalRB maintains specs that are very rigid and well tested.  These specs very closely follow the MRI standards; we have had very few issues with the implementation.  Performance and size are more of an issue here; we are able to run UIMachine on the iPhone with a typical controller dispatch time of around 2ms which is acceptable; our controllers and actions generally emit events and segues in the range of 10-20 seconds minimum so we are well within our specs; The size of OpalRB is of some concern, our package typically exports at around 480kilo-bytes which is more than we would like but given the niceties of ruby, we are inclined you will agree this is worth it.
@@ -16,6 +14,18 @@ You should never define global or local variables when defining actions and cont
 
 The controller lifetime is destroyed in the case of ``move_segue`` and ``pop_segue`` for the from controller.  During a ``push_segue`` the from controller's `$_` session is saved and restored during a ``pop_segue``
 
+## Special events
+
+####Server Generated Events
+ - segue
+ - to_action
+ - custom
+
+####Client Generated Events
+ - initialize
+ - segue_completed
+ - tick
+ - custom
 
 ## Defining a controller and associated actions
 
