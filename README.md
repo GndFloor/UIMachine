@@ -20,6 +20,7 @@ The controller lifetime is destroyed in the case of ``move_segue`` and ``pop_seg
  - segue
  - to_action
  - custom
+ - snapshot_image - contains 'payload' entry for a snapshot
 
 ####Client Generated Events
  - initialize
