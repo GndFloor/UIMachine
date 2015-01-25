@@ -62,6 +62,9 @@ action "paperclip#default" do
 	interval 1 do
 		#Send an event to the client with the type "speech"
 		send_event "speech", {:say => "It looks like you're trying to save a document"}
+		
+		#Will save the context
+		snapshot
 	end
 	
 	#Do something once after 5 seconds
