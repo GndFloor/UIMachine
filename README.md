@@ -115,3 +115,6 @@ There are 3 kinds of segues
  - ``pop_segue``
 
 The client is expected to transmit back a ``completed_segue`` after completing the given segue.  Failure to do so will result in an exception.
+
+## Process
+The #process call works like an event loop.  The client should call #process with a {:type => "tick"} at the correct time interval and when any custom events have taken place.  #process can return multiple events, such as the snapshot and segue event simultaneously.  This is different than the case of calling process multiple times; multiple events recieved from process are order independent, the client may handle the events in any order the client chooses, even asynchronously.  Multiple calls to process signal ordered events.
