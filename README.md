@@ -107,6 +107,9 @@ get "completed_breakdown" => "completed_breakdown#start"
 get "paused" => "paused#default"
 ```
 
+## Multiplexing
+The server is designed to either be run on the client, web-server, shared peer, the sky is the limit!  The event system supports multiplexing via master-slave that allows one implementation to control the ``segue_completed`` for intra-controller and intra-action completion.  These synchronization check-points are designed to assist with animations but in a master-slave mode, the slave's are still able to animate fully, but if a slave completes it's animation sequence before the master, it will stall.  If a slave completes after, the slave should not consume the incomming message so in the worst case the slave ends up behind the master but still fully animating with it's own speed.  We generally use slave's under no-animation as many UI platforms we develop on have very few guarantees on synchronization when animations are used.
+
 ## Segue
 
 There are 3 kinds of segues
