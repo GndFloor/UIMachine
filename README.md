@@ -4,7 +4,7 @@
 
 UIMachine was purpose built for **Fittr®**  because we mave multiple platforms to support and a view hierarchy during our workouts that is unrepresentable by apple's storyboard system.  That's not to say that UIMachine is a replacement for typical view management systems, (The majority of our iOS client uses Storyboards), but serves a different purpose.  If you're doing a presentation-like application with lots of animations and the occasional user interaction, this might be the right fit for you.
 
-As our team members are ardent supporters of FreeBSD, this system is designed with many UNIX'isms that boil down to increadible simple features like multiplexing UI out to multiple slaves without sacrificing the integrity, snapshotting and versioning allowing UI restoration in a seamless manner, and a very nice set ouf auditing tools for debugging.  
+As our team members are ardent supporters of FreeBSD and rails, this system is designed with many UNIX'isms and Rail's Ways that boil down to increadible simple features like multiplexing UI out to multiple slaves without sacrificing the integrity, snapshotting and versioning allowing UI restoration in a seamless manner, a very nice set ouf auditing tools for debugging, a simple and extensible DSL controller/action paradigm, routing files, and much more!  
 
 We built **UIMachine** with ruby and uses the [OpalRB](http://opalrb.org) implementation; For those unfamiliar, OpalRB is a ruby implementation ontop of javascript.  UIMachine is written in ruby but exports to a generic single **application.js** file that you interface with.  It has been tested with **WebKit DOM-LESS** runtime.
 
