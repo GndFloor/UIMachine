@@ -114,6 +114,8 @@ get "paused" => "paused#default"
 ## Multiplexing
 The server is designed to either be run on the client, web-server, shared peer, the sky is the limit!  The event system supports multiplexing via master-slave that allows one implementation to control the ``segue_completed`` for intra-controller and intra-action completion.  These synchronization check-points are designed to assist with animations but in a master-slave mode, the slave's are still able to animate fully, but if a slave completes it's animation sequence before the master, it will stall.  If a slave completes after, the slave should not consume the incomming message so in the worst case the slave ends up behind the master but still fully animating with it's own speed.  We generally use slave's under no-animation as many UI platforms we develop on have very few guarantees on synchronization when animations are used.
 
+You will have to queue events that are recieved if you are multiplexing to a slave.  Reset the queue when you recieve a segue event and keep all items in the queue to push to the slave when it attaches.  Otherwise the slave may attach mid-action and not recieve a segue event.  It is recommended that you throttle the slave's event reads with a messaging queue, that way the slave can consume events at an appropriate speed and simulate ''segue_completed''.
+
 ## Segue
 
 There are 3 kinds of segues
